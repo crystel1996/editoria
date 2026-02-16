@@ -1,7 +1,6 @@
 import ArticlePage from "@pages/articles";
+import { ARTICLE_PATH } from "@services/path/article";
 import type { IRoute } from "@types/routes.interface";
-
-const ARTICLE_PATH = () => "/articles";
 
 const ArticleRoutes: IRoute[] = [
     {
