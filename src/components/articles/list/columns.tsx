@@ -3,13 +3,18 @@ import type { ITableColumn } from "@components/common/table/interface";
 import { Star, StarBorder } from "@mui/icons-material";
 import { Box, Chip, IconButton } from "@mui/material";
 import type { IArticle } from "@interfaces/article.interface";
+import type { ICategory } from "@interfaces/category.interface";
 
-const columns = (toggleFeatured: (rowId: string | number) => void): ITableColumn[] => ([
+const columns = (toggleFeatured: (rowId: string | number) => void, categories?: ICategory[]): ITableColumn[] => {
+    // Create a map for quick category lookup
+    const categoryMap = new Map(categories?.map(cat => [cat.id, cat]) || []);
+
+    return [
         {
             id: "title",
             label: "Titre",
             sortable: true,
-            width: "35%",
+            width: "25%",
             render: (value, row: any) => (
                 <Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -56,24 +61,35 @@ const columns = (toggleFeatured: (rowId: string | number) => void): ITableColumn
         {
             id: "network",
             label: "Réseau",
+            width: "15%",
+            render: (value, row: any) => (
+                <span>{String((row as IArticle).networkName || value)}</span>
+            ),
         },
         {
             id: "categories",
             label: "Catégories",
+            width: "25%",
             render: (value) => (
                 <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                    {Array.isArray(value) && value.map((cat) => (
-                        <Chip
-                            key={cat}
-                            label={cat}
-                            size="small"
-                            variant="outlined"
-                            sx={{
-                                borderColor: getCategoryColor(cat),
-                                color: getCategoryColor(cat),
-                            }}
-                        />
-                    ))}
+                    {Array.isArray(value) && value.map((catId) => {
+                        const category = categoryMap.get(catId);
+                        const categoryName = category?.name || catId;
+                        const categoryColor = category?.color || getCategoryColor(catId);
+                        
+                        return (
+                            <Chip
+                                key={catId}
+                                label={categoryName}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                    borderColor: categoryColor,
+                                    color: categoryColor,
+                                }}
+                            />
+                        );
+                    })}
                 </Box>
             ),
         },
@@ -91,6 +107,7 @@ const columns = (toggleFeatured: (rowId: string | number) => void): ITableColumn
                 });
             }
         },
-]);
+    ];
+};
 
 export default columns;

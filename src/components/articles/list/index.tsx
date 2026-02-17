@@ -69,7 +69,7 @@ const ArticleList: FC<IArticleListProps> = (props) => {
                 onClearSelection={handleClearSelection}
             />
             <CustomTable
-                columns={columns(handleToggleFeature)}
+                columns={columns(handleToggleFeature, props.categories)}
                 rows={articles}
                 actions={actions({
                     onEdit: handleEdit,

@@ -4,7 +4,7 @@ import type { IArticle } from '@interfaces/article.interface';
 export interface ArticleFilters {
     status?: 'draft' | 'published' | 'archived';
     network?: string;
-    category?: string;
+    categories?: string[];
     featured?: boolean;
     search?: string;
     page?: number;

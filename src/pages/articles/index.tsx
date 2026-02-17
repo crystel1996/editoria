@@ -1,113 +1,41 @@
-import { Box } from "@mui/material";
+import { Box, CircularProgress, Alert } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import style from "./style";
 import Title from "@components/common/title";
 import CustomButton from "@components/common/button";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import ArticleFilter from "@components/articles/filter";
 import ArticleList from "@components/articles/list";
 import ArticleForm from "@components/articles/form";
-import type { IArticle } from "@interfaces/article.interface";
-import { ArticleStatusEnum } from "@interfaces/article.interface";
 import type { IArticleFormInput } from "@components/articles/form/interface";
 import DeleteConfirmation from "@components/articles/deleteConfirmation";
-
-const LIST: IArticle[] = [
-        {
-            id: "1",
-            title: "Découverte d'une nouvelle exoplanète...",
-            content: "Découverte d'une nouvelle exoplanète qui pourrait abriter la vie. Les astronomes partagent leurs observations et premières analyses.",
-            excerpt: "Une nouvelle exoplanète détectée dans une zone habitable.",
-            author: "Sophie Laurent",
-            status: ArticleStatusEnum.DRAFT,
-            network: "Réseau Partenaires",
-            categories: ["Science"],
-            featured: false,
-            publishedAt: null,
-            createdAt: new Date("2025-02-14T10:00:00Z"),
-            updatedAt: new Date("2025-02-14T10:00:00Z"),
-        },
-        {
-            id: "2",
-            title: "La Ligue des Champions : analyse des...",
-            content: "Analyse des matchs de la Ligue des Champions et des performances des equipes favorites.",
-            excerpt: "Retour sur les grands matchs de la semaine.",
-            author: "Thomas Bernard",
-            status: ArticleStatusEnum.PUBLISHED,
-            network: "Réseau Partenaires",
-            categories: ["Sport"],
-            featured: false,
-            publishedAt: new Date("2025-02-14T09:00:00Z"),
-            createdAt: new Date("2025-02-14T08:30:00Z"),
-            updatedAt: new Date("2025-02-14T09:00:00Z"),
-        },
-        {
-            id: "3",
-            title: "Le festival de Cannes 2025 : les films ...",
-            content: "Selection officielle, tendances et surprises du festival de Cannes 2025.",
-            excerpt: "Zoom sur les films en competition cette annee.",
-            author: "Pierre Moreau",
-            status: ArticleStatusEnum.PUBLISHED,
-            network: "Réseau Principal",
-            categories: ["Culture"],
-            featured: true,
-            publishedAt: new Date("2025-02-12T12:00:00Z"),
-            createdAt: new Date("2025-02-12T11:00:00Z"),
-            updatedAt: new Date("2025-02-12T12:00:00Z"),
-        },
-        {
-            id: "4",
-            title: "Les marchés financiers en pleine mut...",
-            content: "Les marches financiers evoluent rapidement sous l'effet des annonces macroeconomiques.",
-            excerpt: "Volatilite accrue et attentes des investisseurs.",
-            author: "Jean Martin",
-            status: ArticleStatusEnum.PUBLISHED,
-            network: "Réseau Principal",
-            categories: ["Business"],
-            featured: false,
-            publishedAt: new Date("2025-02-11T15:00:00Z"),
-            createdAt: new Date("2025-02-11T14:00:00Z"),
-            updatedAt: new Date("2025-02-11T15:00:00Z"),
-        },
-        {
-            id: "5",
-            title: "L'intelligence artificielle révolutionne ...",
-            content: "Applications concretes de l'IA dans l'industrie, la sante et l'education.",
-            excerpt: "Tour d'horizon des usages de l'IA en 2025.",
-            author: "Marie Dupont",
-            status: ArticleStatusEnum.PUBLISHED,
-            network: "Réseau Principal",
-            categories: ["Technologie", "Science"],
-            featured: true,
-            publishedAt: new Date("2025-02-08T10:00:00Z"),
-            createdAt: new Date("2025-02-08T09:00:00Z"),
-            updatedAt: new Date("2025-02-08T10:00:00Z"),
-        },
-        {
-            id: "6",
-            title: "Réforme éducative : ce qui change en...",
-            content: "Les nouvelles mesures de la reforme educative et leur impact attendu sur les eleves.",
-            excerpt: "Les principaux changements a retenir.",
-            author: "Claire Dubois",
-            status: ArticleStatusEnum.ARCHIVED,
-            network: "Réseau Interne",
-            categories: ["Politique"],
-            featured: false,
-            publishedAt: new Date("2025-01-18T09:30:00Z"),
-            createdAt: new Date("2025-01-18T08:30:00Z"),
-            updatedAt: new Date("2025-01-18T09:30:00Z"),
-        },
-    ]
+import { useArticles } from "@context/ArticleContext";
+import { useCategories } from "@context/CategoryContext";
+import type { ArticleFilters } from "@services/api/article.service";
 
 const ArticlePage = () =>{
+    const { articles, loading, error, createArticle, updateArticle, deleteArticle, updateArticleStatus, getArticleById, fetchArticles } = useArticles();
+    const { categories } = useCategories();
 
     const [openForm, setOpenForm] = useState<boolean>(false);
     const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
     const [selectedId, setSelectedId] = useState<string | number | null>(null);
+    const [formLoading, setFormLoading] = useState<boolean>(false);
+
+    const handleFilterChange = useCallback(async (filters: ArticleFilters) => {
+        try {
+            await fetchArticles(filters);
+        } catch (error) {
+            console.error('Error fetching articles with filters:', error);
+        }
+    }, [fetchArticles]);
 
     const handleOpenForm = (id?: string | number) => {
-        id && setSelectedId(id);
-        !id && setSelectedId(null);
+        if (id) {
+            setSelectedId(String(id));
+        } else {
+            setSelectedId(null);
+        }
         setOpenForm(true);
     };
 
@@ -116,17 +44,59 @@ const ArticlePage = () =>{
         setOpenForm(false);
     };
 
-    const handleSubmitForm = (data: IArticleFormInput) => {
-        setOpenForm(false);
+    const handleSubmitForm = async (data: IArticleFormInput) => {
+        try {
+            setFormLoading(true);
+            // Convert status enum to lowercase for API
+            const statusValue = data.status.toLowerCase() as 'draft' | 'published' | 'archived';
+            
+            if (selectedId) {
+                // Update existing article
+                await updateArticle(String(selectedId), {
+                    title: data.title,
+                    content: data.content,
+                    excerpt: data.excerpt,
+                    author: data.author,
+                    categories: data.categories,
+                    network: data.network,
+                    status: statusValue,
+                    featured: data.featured,
+                });
+            } else {
+                // Create new article
+                await createArticle({
+                    title: data.title,
+                    content: data.content,
+                    excerpt: data.excerpt,
+                    author: data.author,
+                    categories: data.categories,
+                    network: data.network,
+                    status: statusValue,
+                    featured: data.featured,
+                });
+            }
+            setOpenForm(false);
+            setSelectedId(null);
+        } catch (error) {
+            console.error('Error saving article:', error);
+        } finally {
+            setFormLoading(false);
+        }
     };
 
     const handleOpenConfirmDelete = (id: string | number) => {
-        setSelectedId(id);
+        setSelectedId(String(id));
         setOpenConfirmDelete(true);
     };
 
-    const handleConfirmDelete = (id: string | number) => {
-        setOpenConfirmDelete(false);
+    const handleConfirmDelete = async (id: string | number) => {
+        try {
+            await deleteArticle(String(id));
+            setOpenConfirmDelete(false);
+            setSelectedId(null);
+        } catch (error) {
+            console.error('Error deleting article:', error);
+        }
     };
 
     const handleCancelDelete = () => {
@@ -134,9 +104,26 @@ const ArticlePage = () =>{
         setOpenConfirmDelete(false);
     };
 
-    const handleToggleFeature = (id: string | number) => {};
+    const handleToggleFeature = async (id: string | number) => {
+        try {
+            const article = getArticleById(String(id));
+            if (article) {
+                await updateArticle(String(id), { featured: !article.featured });
+            }
+        } catch (error) {
+            console.error('Error toggling feature:', error);
+        }
+    };
 
-    const handleArchive = (id: string | number) => {};
+    const handleArchive = async (id: string | number) => {
+        try {
+            await updateArticleStatus(String(id), 'archived');
+        } catch (error) {
+            console.error('Error archiving article:', error);
+        }
+    };
+
+    const selectedArticle = selectedId ? getArticleById(String(selectedId)) : undefined;
 
     return <Box sx={style}>
         <Box className="header">
@@ -150,31 +137,44 @@ const ArticlePage = () =>{
             </CustomButton>
         </Box>        
         <Box>
-            <ArticleFilter />
+            <ArticleFilter onFilterChange={handleFilterChange} />
         </Box>
         <Box>
-            <ArticleList 
-                items={LIST} 
-                onArchive={handleArchive}
-                onDelete={handleOpenConfirmDelete}
-                onEdit={handleOpenForm}
-                onFeature={handleToggleFeature}
-            />
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
+            {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress />
+                </Box>
+            )}
+            {!loading && !error && (
+                <ArticleList 
+                    items={articles}
+                    categories={categories}
+                    onArchive={handleArchive}
+                    onDelete={handleOpenConfirmDelete}
+                    onEdit={handleOpenForm}
+                    onFeature={handleToggleFeature}
+                />
+            )}
         </Box>
         {openForm && (
             <ArticleForm 
                 open={openForm}
-                loading={false}
+                loading={formLoading}
                 onSubmit={handleSubmitForm}
                 onCancel={handleCancelForm}
-                article={selectedId ? LIST.find((a) => a.id === selectedId) : undefined}
+                article={selectedArticle}
             />
         )}
         {selectedId && openConfirmDelete && (
             <DeleteConfirmation 
                 open={openConfirmDelete}
-                articleId={selectedId}
-                articleTitle={selectedId ? LIST.find((a) => a.id === selectedId)?.title! : ""}
+                articleId={String(selectedId)}
+                articleTitle={selectedArticle?.title || ""}
                 onConfirm={handleConfirmDelete}
                 onCancel={handleCancelDelete}
             />

@@ -5,7 +5,6 @@ import CustomCheckBox from "@components/common/input/checkbox";
 import CustomSelect from "@components/common/input/select";
 import CustomTextarea from "@components/common/input/textarea";
 import CustomTextField from "@components/common/input/textField";
-import { getCategoryColor } from "@components/articles/articles.utils";
 import ArticlePreview from "@components/articles/form/preview";
 import { Cancel, Save, Visibility, VisibilityOff } from "@mui/icons-material";
 import { Box, Chip, Grid, Typography } from "@mui/material";
@@ -13,35 +12,48 @@ import { useEffect, useState, type FC } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { dialogActionStyleSx, dialogContentStyleSx, dialogHeaderStyleSx } from './style'
 import { ArticleStatusEnum } from "@interfaces/article.interface";
+import { useCategories } from "@context/CategoryContext";
+import {networkService } from "@services/api";
+import type { INetwork } from "@services/api";
 
 const ArticleForm: FC<IArticleFormProps> = (props) => {
 
     const [showPreview, setShowPreview] = useState(false);
+    const [networks, setNetworks] = useState<INetwork[]>([]);
+    const { categories } = useCategories();
 
     const form  = useForm<IArticleFormInput>();
 
     const watchValues = form.watch();
 
-    const categoryOptions = [
-        { label: "Science", value: "Science" },
-        { label: "Sport", value: "Sport" },
-        { label: "Culture", value: "Culture" },
-        { label: "Business", value: "Business" },
-        { label: "Technologie", value: "Technologie" },
-        { label: "Politique", value: "Politique" },
-    ];
+    const categoryOptions = categories.map(cat => ({ 
+        label: cat.name, 
+        value: String(cat.id)
+    }));
 
-    const networkOptions = [
-        { label: "Réseau Principal", value: "Réseau Principal" },
-        { label: "Réseau Partenaires", value: "Réseau Partenaires" },
-        { label: "Réseau Interne", value: "Réseau Interne" },
-    ];
+    const networkOptions = networks.map(net => ({ 
+        label: net.name, 
+        value: String(net.id)
+    }));
 
     const statusOptions = [
         { label: "Brouillon", value: ArticleStatusEnum.DRAFT },
         { label: "Publié", value: ArticleStatusEnum.PUBLISHED },
         { label: "Archivé", value: ArticleStatusEnum.ARCHIVED },
     ];
+
+    // Load networks
+    useEffect(() => {
+        const loadNetworks = async () => {
+            try {
+                const data = await networkService.getAll();
+                setNetworks(data);
+            } catch (error) {
+                console.error('Error loading networks:', error);
+            }
+        };
+        loadNetworks();
+    }, []);
 
     useEffect(() => {
         !props.open && form.reset()
@@ -50,13 +62,27 @@ const ArticleForm: FC<IArticleFormProps> = (props) => {
     useEffect(() => {
         const handlePopulateForm = () => {
             if(props.article) {
+                // Map status string to enum value
+                const statusMap: { [key: string]: ArticleStatusEnum } = {
+                    'draft': ArticleStatusEnum.DRAFT,
+                    'published': ArticleStatusEnum.PUBLISHED,
+                    'archived': ArticleStatusEnum.ARCHIVED,
+                };
+                
                 Object.keys(props.article).forEach((key) => {
-                    form.setValue(key as keyof IArticleFormInput, props.article?.[key as keyof IArticleFormInput])
+                    let value = props.article?.[key as keyof IArticleFormInput];
+                    
+                    // Map status from lowercase to enum
+                    if (key === 'status' && typeof value === 'string') {
+                        value = statusMap[value] || ArticleStatusEnum.DRAFT;
+                    }
+                    
+                    form.setValue(key as keyof IArticleFormInput, value);
                 });
             }
         }
         handlePopulateForm();
-    }, [props.article]);
+    }, [props.article, form]);
 
     const handleClose = () => {
         props.onCancel();
@@ -169,18 +195,21 @@ const ArticleForm: FC<IArticleFormProps> = (props) => {
                                             onChange: field.onChange,
                                             renderValue: (selected) => (
                                                 <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                                                    {(selected as string[]).map((value) => (
-                                                        <Chip
-                                                            key={value}
-                                                            label={value}
-                                                            size="small"
-                                                            variant="outlined"
-                                                            sx={{
-                                                                borderColor: getCategoryColor(value),
-                                                                color: getCategoryColor(value),
-                                                            }}
-                                                        />
-                                                    ))}
+                                                    {(selected as string[]).map((categoryId) => {
+                                                        const category = categories.find(c => c.id === categoryId);
+                                                        return (
+                                                            <Chip
+                                                                key={categoryId}
+                                                                label={category?.name || categoryId}
+                                                                size="small"
+                                                                variant="outlined"
+                                                                sx={{
+                                                                    borderColor: category?.color || '#999',
+                                                                    color: category?.color || '#999',
+                                                                }}
+                                                            />
+                                                        );
+                                                    })}
                                                 </Box>
                                             ),
                                         }}
@@ -212,6 +241,7 @@ const ArticleForm: FC<IArticleFormProps> = (props) => {
                             <Controller
                                 name="status"
                                 control={form.control}
+                                defaultValue={ArticleStatusEnum.DRAFT}
                                 render={({ field }) => (
                                     <CustomSelect
                                         id="article-status"

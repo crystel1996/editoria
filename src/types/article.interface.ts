@@ -12,6 +12,7 @@ export interface IArticle {
     author: string,
     categories: string[],
     network: string,
+    networkName?: string,
     status: ArticleStatusEnum,
     featured: boolean,
     publishedAt: Date | null,

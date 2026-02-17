@@ -1,7 +1,9 @@
 import type { IArticle } from "@interfaces/article.interface";
+import type { ICategory } from "@interfaces/category.interface";
 
 export interface IArticleListProps extends IArticleActions {
     items: IArticle[];
+    categories?: ICategory[];
 }
 
 export interface IArticleActions {

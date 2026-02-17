@@ -6,6 +6,8 @@ import CustomCard from "@components/common/card";
 import CustomTextField from "@components/common/input/textField";
 import CustomSelect from "@components/common/input/select";
 import CustomCheckBox from "@components/common/input/checkbox";
+import { useCategories } from "@context/CategoryContext";
+import type { ArticleFilters } from '@services/api/article.service';
 
 const INITIAL_FILTERS: IArticleFilterState = {
     search: "",
@@ -14,28 +16,41 @@ const INITIAL_FILTERS: IArticleFilterState = {
     featured: false,
 };
 
-const ArticleFilter: FC<IArticleFilterProps> = () => {
+const ArticleFilter: FC<IArticleFilterProps> = (props) => {
     const [filters, setFilters] = useState<IArticleFilterState>(INITIAL_FILTERS);
+    const { categories } = useCategories();
 
     const statusOptions = [
-        { label: "All Status", value: "" },
-        { label: "Published", value: "published" },
-        { label: "Draft", value: "draft" },
-        { label: "Archived", value: "archived" },
+        { label: "Tous les status", value: "" },
+        { label: "Publié", value: "published" },
+        { label: "Brouillon", value: "draft" },
+        { label: "Archivé", value: "archived" },
     ];
 
     const categoryOptions = [
-        { label: "All Categories", value: "" },
-        { label: "Technology", value: "technology" },
-        { label: "Business", value: "business" },
-        { label: "Lifestyle", value: "lifestyle" },
+        { label: "Toutes les catégories", value: "" },
+        ...categories.map(cat => ({ 
+            label: cat.name, 
+            value: String(cat.id) 
+        })),
     ];
 
     const handleFilterChange = (field: string, value: unknown) => {
-        setFilters((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+        const newFilters = {...filters, [field]: value };
+        setFilters(newFilters);
+        const apiFilters: ArticleFilters = {
+            search: newFilters.search || undefined,
+            categories: newFilters.categories.length > 0 ? newFilters.categories : undefined,
+            status: (newFilters.status as 'draft' | 'published' | 'archived' | undefined) || undefined,
+            featured: newFilters.featured || undefined,
+        };
+
+        // Remove undefined values
+        Object.keys(apiFilters).forEach(
+            (key) => (apiFilters as any)[key] === undefined && delete (apiFilters as any)[key]
+        );
+
+        props.onFilterChange?.(apiFilters);
     };
 
     return (
