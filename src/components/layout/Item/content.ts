@@ -8,6 +8,9 @@ const content = {
         },
         category: {
             title: "Catégories"
+        },
+        notification: {
+            title: "Notifications"
         }
     }
 };
