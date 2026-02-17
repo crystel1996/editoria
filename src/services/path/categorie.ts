@@ -1,0 +1,1 @@
+export const CATEGORIE_PATH = () => "/categories";

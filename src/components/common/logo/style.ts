@@ -5,15 +5,19 @@ const style: SxProps = {
     alignItems: 'center',
     padding: '16px 24px',
     gap: 2,
+    color: '#ffffff',
+    '& .MuiTypography-root': {
+        color: 'inherit'
+    },
     '& .logo-icon': {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         width: 24,
         height: 24,
-        backgroundColor: 'primary.main',
+        backgroundColor: '#182543',
         borderRadius: '50%',
-        color: '#fff',
+        color: 'inherit',
         padding: '16px 16px'
     }
 }

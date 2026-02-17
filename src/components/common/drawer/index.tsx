@@ -36,7 +36,7 @@ const CustomDrawer: FC<ICustomDrawerProps> = (props) => {
                         disablePadding 
                         className={`drawer-item ${item.isActive ? 'active' : ''}`}
                     >
-                        <ListItemButton>
+                        <ListItemButton className="drawer-item-button">
                             <ListItemIcon>
                                 {item.icon}
                             </ListItemIcon>

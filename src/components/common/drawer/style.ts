@@ -11,8 +11,18 @@ const style: SxProps = {
         overflow: 'auto'
     },
     '& .drawer-item': {
+        transition: 'background-color 0.3s',
         '&.active': {
             backgroundColor: darken(theme.palette.primary.main, 0.2)
+        },
+        '& .drawer-item-button': {
+            color: '#ffffff',
+            '& .MuiListItemIcon-root': {
+                color: 'inherit'
+            },
+            '& .MuiTypography-root': {
+                color: 'inherit'
+            }
         }
     }
 }

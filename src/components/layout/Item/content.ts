@@ -5,6 +5,9 @@ const content = {
         },
         article: {
             title: "Articles"
+        },
+        category: {
+            title: "Catégories"
         }
     }
 };
