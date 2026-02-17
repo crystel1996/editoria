@@ -1,6 +1,6 @@
 import CategoriePage from "@pages/categories";
 import { CATEGORIE_PATH } from "@services/path/categorie";
-import type { IRoute } from "@types/routes.interface";
+import type { IRoute } from "@interfaces/routes.interface";
 
 const CategorieRoutes: IRoute[] = [
     {

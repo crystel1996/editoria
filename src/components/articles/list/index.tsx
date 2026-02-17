@@ -6,7 +6,7 @@ import type { ITableRow } from "@components/common/table/interface";
 import columns from "@components/articles/list/columns";
 import actions from "@components/articles/list/actions";
 import MultipleSelection from "@components/articles/list/multipleSelection";
-import type { ArticleStatusEnum } from "@types/article.interface";
+import type { ArticleStatusEnum } from "@interfaces/article.interface";
 
 interface Article extends ITableRow {
     title: string;

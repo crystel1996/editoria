@@ -1,4 +1,4 @@
-import type { ArticleStatusEnum } from "@types/article.interface";
+import type { ArticleStatusEnum } from "@interfaces/article.interface";
 
 export interface IArticleFormProps {
     open: boolean;

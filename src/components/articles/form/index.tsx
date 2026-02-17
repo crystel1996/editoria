@@ -12,7 +12,7 @@ import { Box, Chip, Grid, Typography } from "@mui/material";
 import { useEffect, useState, type FC } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { dialogActionStyleSx, dialogContentStyleSx, dialogHeaderStyleSx } from './style'
-import { ArticleStatusEnum } from "@types/article.interface";
+import { ArticleStatusEnum } from "@interfaces/article.interface";
 
 const ArticleForm: FC<IArticleFormProps> = (props) => {
 

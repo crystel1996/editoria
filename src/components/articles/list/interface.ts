@@ -1,4 +1,4 @@
-import type { IArticle } from "@types/article.interface";
+import type { IArticle } from "@interfaces/article.interface";
 
 export interface IArticleListProps extends IArticleActions {
     items: IArticle[];

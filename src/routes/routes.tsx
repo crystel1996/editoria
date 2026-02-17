@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { Route, Routes } from "react-router-dom";
-import type { IRoutes } from "@types/routes.interface";
+import type { IRoutes } from "@interfaces/routes.interface";
 import ListRoutes from "@routes/listRoutes";
 import Layout from "@components/layout";
 

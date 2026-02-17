@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import type { IArticleFormInput } from "@components/articles/form/interface";
 import { getCategoryColor } from "@components/articles/articles.utils";
-import { ArticleStatusEnum } from "@types/article.interface";
+import { ArticleStatusEnum } from "@interfaces/article.interface";
 import { Box, Chip, Divider, Stack, Typography } from "@mui/material";
 
 interface ArticlePreviewProps {

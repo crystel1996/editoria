@@ -1,6 +1,6 @@
 import DashboardPage from "@pages/dashboard";
 import { DASHBOARD_PATH, HOME_PATH } from "@services/path/dashboard";
-import type { IRoute } from "@types/routes.interface";
+import type { IRoute } from "@interfaces/routes.interface";
 
 const DashboardRoutes: IRoute[] = [
     {

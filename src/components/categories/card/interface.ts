@@ -1,4 +1,4 @@
-import type { ICategory } from "@types/category.interface";
+import type { ICategory } from "@interfaces/category.interface";
 
 export interface ICategoryCardProps {
     item: ICategory;

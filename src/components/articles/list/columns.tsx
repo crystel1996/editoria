@@ -2,7 +2,7 @@ import { getCategoryColor, getStatusColor } from "@components/articles/articles.
 import type { ITableColumn } from "@components/common/table/interface";
 import { Star, StarBorder } from "@mui/icons-material";
 import { Box, Chip, IconButton } from "@mui/material";
-import type { IArticle } from "@types/article.interface";
+import type { IArticle } from "@interfaces/article.interface";
 
 const columns = (toggleFeatured: (rowId: string | number) => void): ITableColumn[] => ([
         {

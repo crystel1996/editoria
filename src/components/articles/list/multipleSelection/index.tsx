@@ -1,6 +1,6 @@
 import type { IMultipleSelectionProps } from "@components/articles/list/multipleSelection/interface";
 import CustomButton from "@components/common/button";
-import { ArticleStatusEnum } from "@types/article.interface";
+import { ArticleStatusEnum } from "@interfaces/article.interface";
 import { Archive, Close, Edit, Publish } from "@mui/icons-material";
 import { Box, Chip, Typography } from "@mui/material";
 import type { FC } from "react";

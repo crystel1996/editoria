@@ -7,8 +7,8 @@ import { useState } from "react";
 import ArticleFilter from "@components/articles/filter";
 import ArticleList from "@components/articles/list";
 import ArticleForm from "@components/articles/form";
-import type { IArticle } from "@types/article.interface";
-import { ArticleStatusEnum } from "@types/article.interface";
+import type { IArticle } from "@interfaces/article.interface";
+import { ArticleStatusEnum } from "@interfaces/article.interface";
 import type { IArticleFormInput } from "@components/articles/form/interface";
 import DeleteConfirmation from "@components/articles/deleteConfirmation";
 
