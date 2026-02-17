@@ -11,6 +11,9 @@ const content = {
         },
         notification: {
             title: "Notifications"
+        },
+        import: {
+            title: "Import"
         }
     }
 };

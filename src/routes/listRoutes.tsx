@@ -3,12 +3,14 @@ import CategorieRoutes from "@pages/categories/route";
 import DashboardRoutes from "@pages/dashboard/route";
 import type { IRoute } from "@interfaces/routes.interface";
 import NotificationRoutes from "@pages/notifications/route";
+import ImportRoutes from "@pages/import/route";
 
 const ListRoutes: IRoute[] = [
     ...ArticleRoutes,
     ...DashboardRoutes,
     ...CategorieRoutes,
-    ...NotificationRoutes
+    ...NotificationRoutes,
+    ...ImportRoutes
 ];
 
 export default ListRoutes;

@@ -1,5 +1,5 @@
 
-import { Article, Dashboard, Folder, Notifications } from "@mui/icons-material";
+import { Article, Dashboard, Folder, Notifications, Upload } from "@mui/icons-material";
 import type { IListDrawerMenu } from "@components/common/drawer/interface";
 import { HOME_PATH } from "@services/path/dashboard";
 import type { ILayoutMenuItem } from "./interface";
@@ -7,6 +7,7 @@ import content from "./content";
 import { ARTICLE_PATH } from "@services/path/article";
 import { CATEGORIE_PATH } from "@services/path/categorie";
 import { NOTIFICATION_PATH } from "@services/path/notification";
+import { IMPORT_PATH } from "@services/path/import";
 
 const layoutMenuItem = (input: ILayoutMenuItem):  IListDrawerMenu[] => {
     return [
@@ -33,6 +34,12 @@ const layoutMenuItem = (input: ILayoutMenuItem):  IListDrawerMenu[] => {
                 icon: <Notifications />,
                 path: NOTIFICATION_PATH(),
                 isActive: input.location.pathname == NOTIFICATION_PATH()
+            },
+            {
+                title: content.field.import.title,
+                icon: <Upload />,
+                path: IMPORT_PATH(),
+                isActive: input.location.pathname == IMPORT_PATH()
             }
         ]
 };
