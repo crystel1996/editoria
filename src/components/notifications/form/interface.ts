@@ -1,3 +1,5 @@
+import type { IArticle } from "@interfaces/article.interface";
+
 export interface INotificationFormValues {
     articleId: string;
     recipients: string;
@@ -5,5 +7,7 @@ export interface INotificationFormValues {
 }
 
 export interface INotificationFormProps {
-    onSubmit: (values: INotificationFormValues) => void;
+    onSubmit: (articleId: string, recipients: string[], subject: string) => void | Promise<void>;
+    articles?: IArticle[];
+    isLoading?: boolean;
 }

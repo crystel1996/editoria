@@ -1,4 +1,4 @@
-import { useState, type FC } from "react";
+import { useState, type FC, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Box, Grid } from "@mui/material";
 import CustomCard from "@components/common/card";
@@ -10,34 +10,7 @@ import { Send, Visibility, VisibilityOff } from "@mui/icons-material";
 import type { INotificationFormProps, INotificationFormValues } from "./interface";
 import NotificationPreview from "@components/notifications/preview";
 
-const ARTICLE_OPTIONS = [
-    { label: "L'intelligence artificielle revolutionne le secteur medical", value: "1" },
-    { label: "Les tendances tech de 2025", value: "2" },
-    { label: "Finance et innovation: que retenir", value: "3" },
-];
-
-const ARTICLE_PREVIEW_DATA: Record<string, { title: string; excerpt: string; content: string }> = {
-    "1": {
-        title: "L'intelligence artificielle revolutionne le secteur medical",
-        excerpt: "L'IA transforme le secteur medical avec des diagnostics plus precis.",
-        content:
-            "L'intelligence artificielle transforme profondement le secteur medical. Des algorithmes sophistiques permettent desormais de diagnostiquer certaines maladies avec une precision superieure a celle des ...",
-    },
-    "2": {
-        title: "Les tendances tech de 2025",
-        excerpt: "Un tour d'horizon des innovations qui vont marquer l'annee.",
-        content:
-            "De l'edge computing a l'IA generative, les entreprises accelerent leur transformation. Voici les tendances clees a surveiller pour rester competitif.",
-    },
-    "3": {
-        title: "Finance et innovation: que retenir",
-        excerpt: "Les acteurs financiers innovent pour mieux servir leurs clients.",
-        content:
-            "Open banking, paiements instantanes et cybersecurite: la finance evolue vite. Ce dossier resume les mouvements majeurs et leurs impacts.",
-    },
-};
-
-const NotificationForm: FC<INotificationFormProps> = ({ onSubmit }) => {
+const NotificationForm: FC<INotificationFormProps> = ({ onSubmit, articles, isLoading }) => {
 
     const [showPreview, setShowPreview] = useState<boolean>(false);
 
@@ -49,16 +22,35 @@ const NotificationForm: FC<INotificationFormProps> = ({ onSubmit }) => {
         },
     });
 
+    const articleOptions = useMemo(() => 
+        (articles || []).map(article => ({
+            label: article.title,
+            value: article.id
+        })),
+        [articles]
+    );
+
     const watchValues = form.watch();
-    const selectedArticle = ARTICLE_PREVIEW_DATA[watchValues.articleId] || {
+    const selectedArticle = (articles || []).find(a => a.id === watchValues.articleId);
+    
+    const previewData = selectedArticle ? {
+        title: selectedArticle.title,
+        excerpt: selectedArticle.excerpt || "",
+        content: selectedArticle.content || ""
+    } : {
         title: "Selectionnez un article",
         excerpt: "Aucun resume disponible pour le moment.",
         content: "Le contenu de l'article apparaitra ici apres selection.",
     };
-    const previewSubject = watchValues.subject || `Nouvel article : ${selectedArticle.title}`;
+    const previewSubject = watchValues.subject || `Nouvel article : ${previewData.title}`;
 
     const handleSubmit = (values: INotificationFormValues) => {
-        onSubmit(values);
+        const recipientsList = values.recipients
+            .split(",")
+            .map(item => item.trim())
+            .filter(item => item.length > 0);
+        
+        onSubmit(values.articleId, recipientsList, values.subject);
         form.reset();
     };
 
@@ -84,7 +76,7 @@ const NotificationForm: FC<INotificationFormProps> = ({ onSubmit }) => {
                                         <CustomSelect
                                             id="notification-article"
                                             label="Article"
-                                            options={ARTICLE_OPTIONS}
+                                            options={articleOptions}
                                             selectProps={{
                                                 value: field.value,
                                                 onChange: field.onChange,
@@ -118,8 +110,9 @@ const NotificationForm: FC<INotificationFormProps> = ({ onSubmit }) => {
                                         type="submit"
                                         variant="contained"
                                         startIcon={<Send />}
+                                        disabled={isLoading}
                                     >
-                                        Envoyer
+                                        {isLoading ? "Envoi..." : "Envoyer"}
                                     </CustomButton>
                                     <CustomButton
                                         variant="outlined"
@@ -144,9 +137,9 @@ const NotificationForm: FC<INotificationFormProps> = ({ onSubmit }) => {
                                 <NotificationPreview
                                     fromEmail="noreply@cms-editorial.com"
                                     subject={previewSubject}
-                                    articleTitle={selectedArticle.title}
-                                    articleExcerpt={selectedArticle.excerpt}
-                                    articleContent={selectedArticle.content}
+                                    articleTitle={previewData.title}
+                                    articleExcerpt={previewData.excerpt}
+                                    articleContent={previewData.content}
                                 />
                             )
                         }}

@@ -19,6 +19,14 @@ export const notificationService = {
         const response = await apiClient.get(`/notifications/${id}`);
         return response.data;
     },
+
+    async send(articleId: string, recipients: string[], subject: string): Promise<INotification> {
+        const response = await apiClient.post(`/articles/${articleId}/notify`, {
+            recipients,
+            subject,
+        });
+        return response.data;
+    },
 };
 
 export default notificationService;

@@ -5,7 +5,7 @@ export interface INotificationHistoryItem {
     articleTitle: string;
     recipientsCount: number;
     date: string;
-    status: NotificationStatus;
+    status: string;
 }
 
 export interface INotificationHistoryProps {
