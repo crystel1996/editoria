@@ -119,6 +119,10 @@ export const articleService = {
         return response.data;
     },
 
+    async updateStatusMultiple(ids: (string | number)[], status: 'draft' | 'published' | 'archived'): Promise<void> {
+        await apiClient.patch('/articles/batch/status', { ids, status });
+    },
+
     async sendNotification(id: string, recipients: string[]): Promise<any> {
         const response = await apiClient.post(`/articles/${id}/notify`, { recipients });
         return response.data;

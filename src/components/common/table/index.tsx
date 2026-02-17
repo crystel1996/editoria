@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
     Table,
     TableBody,
@@ -27,12 +27,13 @@ const CustomTable: FC<ICustomTableProps> = ({
     onSelectionChange,
     isLoading = false,
     emptyMessage = "No data available",
+    selected = [],
     selectable = true,
     stickyHeader = true,
     ...props
 }) => {
     const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
-        new Set()
+        new Set(selected || [])
     );
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [activeRowId, setActiveRowId] = useState<string | number | null>(null);
@@ -40,6 +41,11 @@ const CustomTable: FC<ICustomTableProps> = ({
         key: string;
         direction: "asc" | "desc";
     } | null>(null);
+
+    // Update selectedRows when selected prop changes
+    useEffect(() => {
+        setSelectedRows(new Set(selected || []));
+    }, [selected]);
 
     const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {

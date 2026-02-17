@@ -4,6 +4,7 @@ import type { ICategory } from "@interfaces/category.interface";
 export interface IArticleListProps extends IArticleActions {
     items: IArticle[];
     categories?: ICategory[];
+    onChangeMultipleStatus?: (ids: (string | number)[], status: 'draft' | 'published' | 'archived') => Promise<void>;
 }
 
 export interface IArticleActions {

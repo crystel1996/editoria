@@ -31,6 +31,7 @@ export interface ICustomTableProps extends Omit<TableProps, "children"> {
     onSelectionChange?: (selectedIds: (string | number)[]) => void;
     isLoading?: boolean;
     emptyMessage?: string;
+    selected?: (string | number)[];
     selectable?: boolean;
     stickyHeader?: boolean;
 }

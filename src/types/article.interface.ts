@@ -1,7 +1,7 @@
 export enum ArticleStatusEnum {
-  DRAFT = "DRAFT",
-  PUBLISHED = "PUBLISHED",
-  ARCHIVED = "ARCHIVED",
+  DRAFT = "Draft",
+  PUBLISHED = "Published",
+  ARCHIVED = "Archived",
 }
 
 export interface IArticle {

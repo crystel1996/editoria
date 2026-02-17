@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Alert } from "@mui/material";
+import { Box, CircularProgress, Alert, Pagination } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import style from "./style";
 import Title from "@components/common/title";
@@ -14,21 +14,39 @@ import { useCategories } from "@context/CategoryContext";
 import type { ArticleFilters } from "@services/api/article.service";
 
 const ArticlePage = () =>{
-    const { articles, loading, error, createArticle, updateArticle, deleteArticle, updateArticleStatus, getArticleById, fetchArticles } = useArticles();
+    const { articles, loading, error, createArticle, updateArticle, deleteArticle, updateArticleStatus, getArticleById, fetchArticles, pagination, updateMultipleArticlesStatus } = useArticles();
     const { categories } = useCategories();
 
     const [openForm, setOpenForm] = useState<boolean>(false);
     const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
     const [selectedId, setSelectedId] = useState<string | number | null>(null);
     const [formLoading, setFormLoading] = useState<boolean>(false);
+    const [currentFilters, setCurrentFilters] = useState<ArticleFilters>({});
 
     const handleFilterChange = useCallback(async (filters: ArticleFilters) => {
         try {
-            await fetchArticles(filters);
+            setCurrentFilters(filters);
+            await fetchArticles({ ...filters, page: 1, limit: 20 });
         } catch (error) {
             console.error('Error fetching articles with filters:', error);
         }
     }, [fetchArticles]);
+
+    const handlePageChange = async (_event: React.ChangeEvent<unknown>, page: number) => {
+        try {
+            await fetchArticles({ ...currentFilters, page, limit: 20 });
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+        }
+    };
+
+    const handleChangeMultipleStatus = async (ids: (string | number)[], status: 'draft' | 'published' | 'archived') => {
+        try {
+            await updateMultipleArticlesStatus(ids, status);
+        } catch (error) {
+            console.error('Error updating articles status:', error);
+        }
+    };
 
     const handleOpenForm = (id?: string | number) => {
         if (id) {
@@ -150,15 +168,28 @@ const ArticlePage = () =>{
                     <CircularProgress />
                 </Box>
             )}
-            {!loading && !error && (
-                <ArticleList 
-                    items={articles}
-                    categories={categories}
-                    onArchive={handleArchive}
-                    onDelete={handleOpenConfirmDelete}
-                    onEdit={handleOpenForm}
-                    onFeature={handleToggleFeature}
-                />
+            {!loading && (
+                <>
+                    <ArticleList 
+                        items={articles}
+                        categories={categories}
+                        onArchive={handleArchive}
+                        onDelete={handleOpenConfirmDelete}
+                        onEdit={handleOpenForm}
+                        onFeature={handleToggleFeature}
+                        onChangeMultipleStatus={handleChangeMultipleStatus}
+                    />
+                    {pagination.totalPages > 1 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                            <Pagination 
+                                count={pagination.totalPages}
+                                page={pagination.page}
+                                onChange={handlePageChange}
+                                color="primary"
+                            />
+                        </Box>
+                    )}
+                </>
             )}
         </Box>
         {openForm && (

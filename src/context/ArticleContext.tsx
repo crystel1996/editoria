@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { articleService } from '@services/api';
 import type { IArticle } from '@interfaces/article.interface';
+import { ArticleStatusEnum } from '@interfaces/article.interface';
 import type { CreateArticleDTO, UpdateArticleDTO, ArticleFilters } from '@services/api/article.service';
 
 interface ArticleContextType {
@@ -20,7 +21,10 @@ interface ArticleContextType {
     updateArticle: (id: string, data: UpdateArticleDTO) => Promise<IArticle>;
     deleteArticle: (id: string) => Promise<void>;
     updateArticleStatus: (id: string, status: 'draft' | 'published' | 'archived') => Promise<IArticle>;
+    updateMultipleArticlesStatus: (ids: (string | number)[], status: 'draft' | 'published' | 'archived') => Promise<void>;
     refreshArticles: (filters?: ArticleFilters) => Promise<void>;
+    setPage: (page: number) => void;
+    currentFilters: ArticleFilters | null;
 }
 
 const ArticleContext = createContext<ArticleContextType | undefined>(undefined);
@@ -35,16 +39,24 @@ export const ArticleProvider = ({ children }: ArticleProviderProps) => {
     const [error, setError] = useState<string | null>(null);
     const [pagination, setPagination] = useState({
         page: 1,
-        limit: 10,
+        limit: 20,
         total: 0,
         totalPages: 0,
     });
+    const [currentFilters, setCurrentFilters] = useState<ArticleFilters | null>(null);
 
     const fetchArticles = async (filters?: ArticleFilters) => {
         try {
             setLoading(true);
             setError(null);
-            const response = await articleService.getAll(filters);
+            // Add limit to filters if not specified
+            const filtersWithLimit = {
+                ...filters,
+                limit: filters?.limit || 20,
+                page: filters?.page || 1,
+            };
+            setCurrentFilters(filters || null);
+            const response = await articleService.getAll(filtersWithLimit);
             setArticles(response.data);
             setPagination(response.pagination);
         } catch (err: any) {
@@ -53,6 +65,15 @@ export const ArticleProvider = ({ children }: ArticleProviderProps) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const setPage = async (page: number) => {
+        const filtersWithPage = {
+            ...currentFilters,
+            page,
+            limit: 20,
+        };
+        await fetchArticles(filtersWithPage);
     };
 
     const getArticleById = (id: string): IArticle | undefined => {
@@ -114,6 +135,33 @@ export const ArticleProvider = ({ children }: ArticleProviderProps) => {
         }
     };
 
+    const updateMultipleArticlesStatus = async (ids: (string | number)[], status: 'draft' | 'published' | 'archived'): Promise<void> => {
+        try {
+            setError(null);
+            await articleService.updateStatusMultiple(ids, status);
+            
+            // Map lowercase status to ArticleStatusEnum
+            const statusMap: { [key: string]: ArticleStatusEnum } = {
+                'draft': ArticleStatusEnum.DRAFT,
+                'published': ArticleStatusEnum.PUBLISHED,
+                'archived': ArticleStatusEnum.ARCHIVED,
+            };
+            
+            const enumStatus = statusMap[status];
+            
+            // Update the articles in local state
+            setArticles((prev) =>
+                prev.map((article) => 
+                    ids.includes(article.id) ? { ...article, status: enumStatus } : article
+                )
+            );
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.error || err.message || 'Erreur lors de la mise à jour du statut';
+            setError(errorMsg);
+            throw new Error(errorMsg);
+        }
+    };
+
     const refreshArticles = async (filters?: ArticleFilters) => {
         await fetchArticles(filters);
     };
@@ -133,7 +181,10 @@ export const ArticleProvider = ({ children }: ArticleProviderProps) => {
         updateArticle,
         deleteArticle,
         updateArticleStatus,
+        updateMultipleArticlesStatus,
         refreshArticles,
+        setPage,
+        currentFilters,
     };
 
     return (

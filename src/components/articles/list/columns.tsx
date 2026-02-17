@@ -50,6 +50,7 @@ const columns = (toggleFeatured: (rowId: string | number) => void, categories?: 
         {
             id: "status",
             label: "Statut",
+            sortable: true,
             render: (value) => (
                 <Chip
                     label={String(value)}
@@ -62,6 +63,7 @@ const columns = (toggleFeatured: (rowId: string | number) => void, categories?: 
             id: "network",
             label: "Réseau",
             width: "15%",
+            sortable: true,
             render: (value, row: any) => (
                 <span>{String((row as IArticle).networkName || value)}</span>
             ),

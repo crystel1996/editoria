@@ -34,13 +34,11 @@ const ArticleList: FC<IArticleListProps> = (props) => {
     };
 
     const handleToggleFeature = (rowId: string | number) => {
-        console.log("Feature article:", rowId);
         props.onFeature(rowId);
     };
 
     const handleArchive = (rowId: string | number) => {
         props.onArchive(rowId);
-        console.log("Archive article:", rowId);
     };
 
     const handleDelete = (rowId: string | number) => {
@@ -51,10 +49,19 @@ const ArticleList: FC<IArticleListProps> = (props) => {
         setSelectedIds(ids);
     };
 
-    const handleChangeStatus = (status: ArticleStatusEnum) => {
-        // TODO: Implement API call to update multiple articles status
-        console.log(`Changing status to ${status} for articles:`, selectedIds);
-        setSelectedIds([]);
+    const handleChangeStatus = async (status: ArticleStatusEnum) => {
+        try {
+            if (props.onChangeMultipleStatus) {
+                // Convert ArticleStatusEnum to lowercase for API
+                const statusString = String(status);
+                const statusLowercase = statusString.toLowerCase() as 'draft' | 'published' | 'archived';
+                await props.onChangeMultipleStatus(selectedIds, statusLowercase);
+            }
+        } catch (error) {
+            console.error('Error changing status:', error);
+        } finally {
+            setSelectedIds([]);
+        }
     };
 
     const handleClearSelection = () => {
@@ -78,6 +85,7 @@ const ArticleList: FC<IArticleListProps> = (props) => {
                     onDelete: handleDelete,
                 })}
                 onSelectionChange={handleSelectionChange}
+                selected={selectedIds}
                 selectable={true}
                 stickyHeader={true}
                 emptyMessage="Aucun article trouvé"
