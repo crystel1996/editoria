@@ -15,4 +15,5 @@ export type ICustomSelectProps = {
     selectProps?: SelectProps;
     menuItemProps?: MenuItemProps;
     helperText?: string;
+    error?: boolean;
 }

@@ -7,8 +7,9 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@asets/*": ["src/assets/*"],
+      "@assets/*": ["src/assets/*"],
       "@components/*": ["src/components/*"],
+      "@context/*": ["src/context/*"],
       "@hooks/*": ["src/hooks/*"],
       "@pages/*": ["src/pages/*"],
       "@routes/*": ["src/routes/*"],

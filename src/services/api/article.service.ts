@@ -43,6 +43,50 @@ export interface UpdateArticleDTO {
     featured?: boolean;
 }
 
+function validateArticleData(data: CreateArticleDTO | UpdateArticleDTO, isUpdate: boolean = false): void {
+    const errors: string[] = [];
+
+    // Validate title
+    if (data.title !== undefined) {
+        if (!data.title || data.title.trim().length < 5) {
+            errors.push('Le titre doit contenir au moins 5 caractères');
+        }
+    } else if (!isUpdate) {
+        errors.push('Le titre est obligatoire');
+    }
+
+    // Validate content
+    if (data.content !== undefined) {
+        if (!data.content || data.content.trim().length < 50) {
+            errors.push('Le contenu doit contenir au moins 50 caractères');
+        }
+    } else if (!isUpdate) {
+        errors.push('Le contenu est obligatoire');
+    }
+
+    // Validate categories
+    if ('categories' in data) {
+        if (!data.categories || data.categories.length === 0) {
+            errors.push('L\'article doit avoir au moins une catégorie');
+        }
+    } else if (!isUpdate) {
+        errors.push('Au moins une catégorie est obligatoire');
+    }
+
+    // Validate network
+    if ('network' in data) {
+        if (!data.network || data.network.trim().length === 0) {
+            errors.push('Le réseau est obligatoire');
+        }
+    } else if (!isUpdate) {
+        errors.push('Le réseau est obligatoire');
+    }
+
+    if (errors.length > 0) {
+        throw new Error(errors.join(', '));
+    }
+}
+
 export const articleService = {
     async getAll(filters?: ArticleFilters): Promise<PaginatedResponse<IArticle>> {
         const response = await apiClient.get('/articles', { params: filters });
@@ -55,11 +99,13 @@ export const articleService = {
     },
 
     async create(data: CreateArticleDTO): Promise<IArticle> {
+        validateArticleData(data);
         const response = await apiClient.post('/articles', data);
         return response.data;
     },
 
     async update(id: string, data: UpdateArticleDTO): Promise<IArticle> {
+        validateArticleData(data, true);
         const response = await apiClient.put(`/articles/${id}`, data);
         return response.data;
     },

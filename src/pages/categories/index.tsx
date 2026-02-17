@@ -1,107 +1,85 @@
 import CustomButton from "@components/common/button";
 import Title from "@components/common/title";
 import { Add } from "@mui/icons-material";
-import { Box } from "@mui/material";
+import { Box, CircularProgress, Alert } from "@mui/material";
 import style from "./style";
 import CategoryList from "@components/categories/list";
 import { useState } from "react";
 import DeleteConfirmation from "@components/categories/deleteConfirmation";
 import CategoryForm from "@components/categories/form";
 import type { ICategoryFormInput } from "@components/categories/form/interface";
-
-const LIST = [
-    {
-        id: "1",
-        name: "Catégorie 1",
-        description: "Description de la catégorie 1",
-        slug: "categorie-1",
-        color: "#ff5722",
-        articlesCount: 5
-    },
-    {
-        id: "2",
-        name: "Catégorie 2",
-        description: "Description de la catégorie 2",
-        slug: "categorie-2",
-        color: "#4caf50",
-        articlesCount: 3
-    },
-    {
-        id: "2",
-        name: "Catégorie 2",
-        description: "Description de la catégorie 2",
-        slug: "categorie-2",
-        color: "#4caf50",
-        articlesCount: 3
-    },
-    {
-        id: "2",
-        name: "Catégorie 2",
-        description: "Description de la catégorie 2",
-        slug: "categorie-2",
-        color: "#4caf50",
-        articlesCount: 3
-    },
-    {
-        id: "2",
-        name: "Catégorie 2",
-        description: "Description de la catégorie 2",
-        slug: "categorie-2",
-        color: "#4caf50",
-        articlesCount: 3
-    },
-    {
-        id: "2",
-        name: "Catégorie 2",
-        description: "Description de la catégorie 2",
-        slug: "categorie-2",
-        color: "#4caf50",
-        articlesCount: 3
-    },
-    {
-        id: "2",
-        name: "Catégorie 2",
-        description: "Description de la catégorie 2",
-        slug: "categorie-2",
-        color: "#4caf50",
-        articlesCount: 3
-    }
-];
+import { useCategories } from "@context/CategoryContext";
 
 const CategoriePage = () => {
+    const { categories, loading, error, createCategory, updateCategory, deleteCategory, getCategoryById } = useCategories();
 
     const [openForm, setOpenForm] = useState<boolean>(false);
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string | number | null>(null);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
+    const [formLoading, setFormLoading] = useState<boolean>(false);
 
     const handleOpenForm = (id?: string | number) => {
-        id && setSelectedCategoryId(id);
-        !id && setSelectedCategoryId(null);
+        if (id) {
+            setSelectedCategoryId(String(id));
+        } else {
+            setSelectedCategoryId(null);
+        }
         setOpenForm(true);
     };
 
-    const handleSaveForm = (data: ICategoryFormInput) => {
-        // Handle form submission logic here
-        setOpenForm(false);
+    const handleSaveForm = async (data: ICategoryFormInput) => {
+        try {
+            setFormLoading(true);
+            if (selectedCategoryId) {
+                // Update existing category
+                await updateCategory(selectedCategoryId, {
+                    name: data.name,
+                    description: data.description,
+                    color: data.color,
+                });
+            } else {
+                // Create new category
+                await createCategory({
+                    name: data.name,
+                    description: data.description,
+                    color: data.color,
+                });
+            }
+            setOpenForm(false);
+            setSelectedCategoryId(null);
+        } catch (error) {
+            console.error('Error saving category:', error);
+        } finally {
+            setFormLoading(false);
+        }
     };
 
     const handleCancelForm = () => {
         setOpenForm(false);
+        setSelectedCategoryId(null);
     };
 
     const handleOpenConfirmDelete = (id: string | number) => {
-        setSelectedCategoryId(id);
+        setSelectedCategoryId(String(id));
         setOpenConfirmDelete(true);
     };
 
-    const handleConfirmDelete = (id: string | number) => {
-        // Handle delete logic here
-        setOpenConfirmDelete(false);
+    const handleConfirmDelete = async (id: string | number) => {
+        try {
+            await deleteCategory(String(id));
+            setOpenConfirmDelete(false);
+            setSelectedCategoryId(null);
+        } catch (error) {
+            console.error('Error deleting category:', error);
+        }
     };
 
     const handleCancelDelete = () => {
         setOpenConfirmDelete(false);
+        setSelectedCategoryId(null);
     };
+
+    const selectedCategory = selectedCategoryId ? getCategoryById(selectedCategoryId) : undefined;
 
     return <Box sx={style}>
         <Box className="header">
@@ -115,26 +93,38 @@ const CategoriePage = () => {
             </CustomButton>
         </Box>
         <Box>
-            <CategoryList 
-                items={LIST}
-                onEdit={(id: string | number) => handleOpenForm(id)}
-                onDelete={handleOpenConfirmDelete}
-            />
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
+            {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress />
+                </Box>
+            )}
+            {!loading && !error && (
+                <CategoryList 
+                    items={categories}
+                    onEdit={(id: string | number) => handleOpenForm(id)}
+                    onDelete={handleOpenConfirmDelete}
+                />
+            )}
         </Box>
         {openForm && (
             <CategoryForm 
                 open={openForm}
                 onSubmit={handleSaveForm}
                 onCancel={handleCancelForm}
-                loading={false}
-                category={selectedCategoryId ? LIST.find(item => item.id === selectedCategoryId) : undefined}
+                loading={formLoading}
+                category={selectedCategory}
             />
         )}
         {selectedCategoryId && openConfirmDelete && (
             <DeleteConfirmation 
                 open={openConfirmDelete}
                 categoryId={selectedCategoryId}
-                categoryName={selectedCategoryId ? LIST.find(item => item.id === selectedCategoryId)?.name! : ""}
+                categoryName={selectedCategory?.name || ""}
                 onConfirm={handleConfirmDelete}
                 onCancel={handleCancelDelete}
             />

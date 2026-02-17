@@ -1,9 +1,14 @@
 import './App.css'
 import Routes from './routes/routes'
+import { CategoryProvider } from './context/CategoryContext'
 
 function App() {
 
-  return <Routes />
+  return (
+    <CategoryProvider>
+      <Routes />
+    </CategoryProvider>
+  )
 }
 
 export default App

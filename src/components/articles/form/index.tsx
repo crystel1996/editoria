@@ -149,6 +149,15 @@ const ArticleForm: FC<IArticleFormProps> = (props) => {
                             <Controller
                                 name="categories"
                                 control={form.control}
+                                rules={{
+                                    required: "Au moins une catégorie est obligatoire",
+                                    validate: (value) => {
+                                        if (!value || value.length === 0) {
+                                            return "L'article doit avoir au moins une catégorie";
+                                        }
+                                        return true;
+                                    },
+                                }}
                                 render={({ field }) => (
                                     <CustomSelect
                                         id="article-categories"
@@ -175,12 +184,17 @@ const ArticleForm: FC<IArticleFormProps> = (props) => {
                                                 </Box>
                                             ),
                                         }}
+                                        error={!!form.formState.errors.categories}
+                                        helperText={form.formState.errors.categories?.message}
                                     />
                                 )}
                             />
                             <Controller
                                 name="network"
                                 control={form.control}
+                                rules={{
+                                    required: "Le réseau est obligatoire",
+                                }}
                                 render={({ field }) => (
                                     <CustomSelect
                                         id="article-network"
@@ -190,6 +204,8 @@ const ArticleForm: FC<IArticleFormProps> = (props) => {
                                             value: field.value ?? "",
                                             onChange: field.onChange,
                                         }}
+                                        error={!!form.formState.errors.network}
+                                        helperText={form.formState.errors.network?.message}
                                     />
                                 )}
                             />
