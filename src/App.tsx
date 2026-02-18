@@ -3,6 +3,7 @@ import Routes from './routes/routes'
 import { CategoryProvider } from './context/CategoryContext'
 import { ArticleProvider } from './context/ArticleContext'
 import { NotificationProvider } from './context/NotificationContext'
+import { ImportProvider } from './context/ImportContext'
 
 function App() {
 
@@ -10,7 +11,9 @@ function App() {
     <ArticleProvider>
       <CategoryProvider>
         <NotificationProvider>
-          <Routes />
+          <ImportProvider>
+            <Routes />
+          </ImportProvider>
         </NotificationProvider>
       </CategoryProvider>
     </ArticleProvider>

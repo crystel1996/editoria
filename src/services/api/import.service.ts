@@ -1,5 +1,16 @@
 import apiClient from './client';
-import type { CreateArticleDTO } from './article.service';
+
+export interface ImportArticleData {
+    title: string;
+    content: string;
+    excerpt: string;
+    author: string;
+    categories?: string[]; // Peut être des noms de catégories
+    category?: string; // Support du singular
+    network: string; // Nom du réseau
+    status?: 'draft' | 'published' | 'archived';
+    featured?: boolean;
+}
 
 export interface ImportResult {
     success: number;
@@ -11,7 +22,7 @@ export interface ImportResult {
 }
 
 export const importService = {
-    async importArticles(articles: CreateArticleDTO[]): Promise<ImportResult> {
+    async importArticles(articles: ImportArticleData[]): Promise<ImportResult> {
         const response = await apiClient.post('/import/articles', articles);
         return response.data;
     },

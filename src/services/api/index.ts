@@ -11,4 +11,4 @@ export type { ArticleFilters, PaginatedResponse, CreateArticleDTO, UpdateArticle
 export type { CreateCategoryDTO, UpdateCategoryDTO } from './category.service';
 export type { INetwork, CreateNetworkDTO, UpdateNetworkDTO } from './network.service';
 export type { INotification } from './notification.service';
-export type { ImportResult } from './import.service';
+export type { ImportResult, ImportArticleData } from './import.service';
