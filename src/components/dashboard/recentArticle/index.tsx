@@ -1,29 +1,72 @@
-import { Box, Typography } from "@mui/material";
+import { useEffect } from "react";
+import { Box, Typography, CircularProgress, Alert } from "@mui/material";
 import CustomCard from "@components/common/card";
-
-interface Article {
-    id: number;
-    title: string;
-    author: string;
-    date: string;
-}
-
-const LATEST_ARTICLES: Article[] = [
-    { id: 1, title: "La Ligue des Champions : analyse des quarts de finale", author: "Thomas Bernard", date: "15 fevr." },
-    { id: 2, title: "Le festival de Cannes 2025 : les films a ne pas manquer", author: "Pierre Moreau", date: "13 fevr." },
-    { id: 3, title: "Les marches financiers en pleine mutation", author: "Jean Martin", date: "12 fevr." },
-    { id: 4, title: "L'intelligence artificielle revolutionne le secteur medical", author: "Marie Dupont", date: "10 fevr." },
-];
+import { useArticles } from "@context/index";
+import { ArticleStatusEnum } from "@interfaces/article.interface";
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const RecentArticle = () => {
+    const { articles, loading, error, fetchArticles } = useArticles();
+
+    useEffect(() => {
+        fetchArticles({ status: 'published', limit: 10 });
+    }, []);
+
+    // Get the 4 most recent articles
+    const recentArticles = articles
+        .filter(a => a.status.toLowerCase() === ArticleStatusEnum.PUBLISHED.toLowerCase())
+        .sort((a, b) => new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime())
+        .slice(0, 4);
+
+    if (loading) {
+        return (
+            <CustomCard
+                cardHeaderProps={{ title: "Derniers articles publiés" }}
+                cardContent={{
+                    attribute: {},
+                    children: <CircularProgress />,
+                }}
+            />
+        );
+    }
+
+    if (error) {
+        return (
+            <CustomCard
+                cardHeaderProps={{ title: "Derniers articles publiés" }}
+                cardContent={{
+                    attribute: {},
+                    children: <Alert severity="error">{error}</Alert>,
+                }}
+            />
+        );
+    }
+
+    if (recentArticles.length === 0) {
+        return (
+            <CustomCard
+                cardHeaderProps={{ title: "Derniers articles publiés" }}
+                cardContent={{
+                    attribute: {},
+                    children: (
+                        <Typography variant="body2" color="text.secondary">
+                            Aucun article publié pour le moment
+                        </Typography>
+                    ),
+                }}
+            />
+        );
+    }
+
     return (
         <CustomCard
-            cardHeaderProps={{ title: "Derniers articles publies" }}
+            cardHeaderProps={{ title: "Derniers articles publiés" }}
             cardContent={{
                 attribute: {},
                 children: (
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        {LATEST_ARTICLES.map((article) => (
+                        {recentArticles.map((article) => (
                             <Box
                                 key={article.id}
                                 sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 }}
@@ -36,8 +79,8 @@ const RecentArticle = () => {
                                         {article.author}
                                     </Typography>
                                 </Box>
-                                <Typography variant="caption" color="text.secondary">
-                                    {article.date}
+                                <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                                    {format(new Date(article.publishedAt || article.createdAt), 'd MMM', { locale: fr })}
                                 </Typography>
                             </Box>
                         ))}

@@ -1,60 +1,114 @@
-import { Box, Chip, Typography } from "@mui/material";
+import { useEffect } from "react";
+import { Box, Chip, Typography, CircularProgress, Alert } from "@mui/material";
 import CustomCard from "@components/common/card";
-
-interface Notification {
-    id: number;
-    title: string;
-    recipients: string;
-    status: string;
-    color: "success" | "error" | "warning" | "info";
-}
-
-const LATEST_NOTIFICATIONS: Notification[] = [
-    {
-        id: 1,
-        title: "Nouvel article : L'intelligence artificielle revolutionne le secteur medical",
-        recipients: "3 destinataire(s)",
-        status: "Envoye",
-        color: "success",
-    },
-    {
-        id: 2,
-        title: "Nouvel article : Le festival de Cannes 2025",
-        recipients: "2 destinataire(s)",
-        status: "Envoye",
-        color: "success",
-    },
-    {
-        id: 3,
-        title: "Les marches financiers en pleine mutation",
-        recipients: "1 destinataire(s)",
-        status: "Echoue",
-        color: "error",
-    },
-];
+import { useNotifications } from "@context/index";
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const RecentNotification = () => {
+    const { notifications, loading, error, fetchNotifications } = useNotifications();
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+    // Get the 3 most recent notifications
+    const recentNotifications = notifications
+        .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())
+        .slice(0, 3);
+
+    const getStatusColor = (status: string): "success" | "error" | "warning" | "info" => {
+        switch (status) {
+            case 'sent':
+                return 'success';
+            case 'failed':
+                return 'error';
+            default:
+                return 'info';
+        }
+    };
+
+    const getStatusLabel = (status: string): string => {
+        switch (status) {
+            case 'sent':
+                return 'Envoyé';
+            case 'failed':
+                return 'Échoué';
+            default:
+                return status;
+        }
+    };
+
+    if (loading) {
+        return (
+            <CustomCard
+                cardHeaderProps={{ title: "Dernières notifications" }}
+                cardContent={{
+                    attribute: {},
+                    children: <CircularProgress />,
+                }}
+            />
+        );
+    }
+
+    if (error) {
+        return (
+            <CustomCard
+                cardHeaderProps={{ title: "Dernières notifications" }}
+                cardContent={{
+                    attribute: {},
+                    children: <Alert severity="error">{error}</Alert>,
+                }}
+            />
+        );
+    }
+
+    if (recentNotifications.length === 0) {
+        return (
+            <CustomCard
+                cardHeaderProps={{ title: "Dernières notifications" }}
+                cardContent={{
+                    attribute: {},
+                    children: (
+                        <Typography variant="body2" color="text.secondary">
+                            Aucune notification pour le moment
+                        </Typography>
+                    ),
+                }}
+            />
+        );
+    }
+
     return (
         <CustomCard
-            cardHeaderProps={{ title: "Dernieres notifications" }}
+            cardHeaderProps={{ title: "Dernières notifications" }}
             cardContent={{
                 attribute: {},
                 children: (
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        {LATEST_NOTIFICATIONS.map((notification) => (
+                        {recentNotifications.map((notification) => (
                             <Box
                                 key={notification.id}
                                 sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 }}
                             >
                                 <Box>
                                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                        {notification.title}
+                                        {notification.subject}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
-                                        {notification.recipients}
+                                        {notification.recipients.length} destinataire(s)
                                     </Typography>
                                 </Box>
-                                <Chip label={notification.status} color={notification.color} size="small" />
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                                        {format(new Date(notification.sentAt), 'd MMM', { locale: fr })}
+                                    </Typography>
+                                    <Chip 
+                                        label={getStatusLabel(notification.status)} 
+                                        color={getStatusColor(notification.status)} 
+                                        size="small" 
+                                    />
+                                </Box>
                             </Box>
                         ))}
                     </Box>
